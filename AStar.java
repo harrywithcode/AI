@@ -68,9 +68,7 @@ public class AStar {
 		//在这个list里面，我先添加这个list从头到尾巴的距离长度，list的开头第一位记录这个长度值
 		//================================================================
 		
-		currentVertices = startNum;//最初始数据
-		pre = startNum;
-		waitList.put(currentVertices, pathValue[currentVertices] + straight_dis[currentVertices]);
+		waitList.put(currentVertices, 0 + straight_dis[currentVertices]);
 		
 		for(int loop = 0; loop < 30; loop++){
 			System.out.println("The input current vertice is " + currentVertices);
@@ -80,9 +78,6 @@ public class AStar {
 			waitList.remove(currentVertices);
 			visitedNode.add(currentVertices);
 			
-			//System.out.println("ddddddddddddd");
-			ArrayList<Integer> around = new ArrayList<Integer>();
-			ArrayList<Integer> hn = new ArrayList<Integer>();
 			
 			
 			for(int i = 0; i < 20 ; i++){
@@ -100,14 +95,18 @@ public class AStar {
 				if(skip == 1){
 					continue;
 				}
-				around.add(i);
+				
+				
+				int truePre = currentVertices;//真实地图里的前辈和儿子，地理位置关系，不是遍历顺序关系
+				int children = i;
+				
 				//=============
 				List<Integer> tails = new ArrayList<Integer>();
 				
 				for(int j = 0; j < recordPath.size(); j++){
-					int tail = recordPath.get(j).size();//每一条的最后一位尾巴
+					int tail = recordPath.get(j).size() - 1;//每一条的最后一位尾巴
 					
-					if(recordPath.get(j).get(tail) == pre){						
+					if(recordPath.get(j).get(tail) == truePre){	//这里记录的pre是实际地图上的pre，不是逻辑顺序上的pre					
 						tails.add(j);//tails存放着所有前辈的所在的二维数组的行数
 					}
 				}
@@ -115,12 +114,13 @@ public class AStar {
 				if(tails.size() == 0){//新出的点，没有前辈
 					ArrayList<Integer> newPath = new ArrayList<Integer>();
 					newPath.add(gn);//list的第一位存放list的长度
-					newPath.add(pre);
+					newPath.add(truePre);
+					newPath.add(children);
 					recordPath.add(newPath);
-					addWhichLine = recordPath.size();
+					addWhichLine = recordPath.size() - 1;
 				}
 				else if(tails.size() == 1){//有一个前辈，直接连过去就行了
-					recordPath.get(tails.get(0)).add(currentVertices);
+					recordPath.get(tails.get(0)).add(children);
 					recordPath.get(tails.get(0)).set(0,recordPath.get(tails.get(0)).get(0)
 							+ gn);//list长度更新
 					addWhichLine = tails.get(0);
@@ -135,7 +135,7 @@ public class AStar {
 							min = p;
 						}
 					}
-					recordPath.get(tails.get(min)).add(currentVertices);
+					recordPath.get(tails.get(min)).add(children);
 					recordPath.get(tails.get(min)).set(0,recordPath.get(tails.get(min)).get(0) 
 							+ gn);
 					addWhichLine = tails.get(min);
@@ -180,6 +180,15 @@ public class AStar {
 			
 			if(currentVertices == endNum){
 				System.out.println("Done!");
+				for(int q = 0; q < recordPath.size(); q++){
+					ArrayList<Integer> finalPath = new ArrayList<Integer>();
+					finalPath = recordPath.get(q);
+					if(finalPath.get(finalPath.size()-1) == endNum){
+						for(int t = 0; t < recordPath.get(q).size(); t++){
+							System.out.print(finalPath.get(t)+" --> ");
+						}
+					}
+				}
 				break;
 			}
 		}
