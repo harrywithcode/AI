@@ -46,8 +46,8 @@ public class AStar {
 		int[][] matrix = container.getMatrix();
 		String[] vertices = container.getVertices();
 		int[] straight_dis = container.getStraight_dis();
-		int startNum = 1;
-		int endNum = 19;
+		int startNum = 19;
+		int endNum = 1;
 		//=======================================
 		
 		ArrayList<Integer> visitedNode = new ArrayList<Integer>();
@@ -119,19 +119,12 @@ public class AStar {
 					ArrayList<Integer> newPath = new ArrayList<Integer>();
 					boolean realNew = true;
 					//========= final problem
-					for(int u = 0; u < recordPath.size(); u++){
-						if(recordPath.get(u).get(recordPath.get(u).size() - 2) == truePre){
-							System.out.println("+++++" + (recordPath.get(u).size() - 2));
-							//newPath.get(u).set(0,newPath.get(u).get(0) - matrix[newPath.get(u)])
-							for(int c = 0; c < recordPath.get(u).size() - 1; c++){
-								newPath.add(recordPath.get(u).get(c));
-								System.out.println("%%%" + recordPath.get(u).get(c));
-							}
-							newPath.add(children);
-							recordPath.add(newPath);
-							addWhichLine = recordPath.size() - 1;
-							realNew = false;//曾经有前辈出现过，不是真正的新点
-						}
+					realNew = copyOrCreate(recordPath, truePre,  realNew);
+					
+					if(realNew == false){
+						int copyLine = copyWhichLine(recordPath,truePre);
+						recordPath = copy(recordPath, copyLine, currentVertices, children, matrix);
+						addWhichLine  = recordPath.size() - 1;
 					}
 					//=========
 					if(realNew == true){
@@ -212,31 +205,67 @@ public class AStar {
 //			
 			
 			if(currentVertices == endNum){
-				System.out.println("Done!");
+				System.out.println("We reach the goal!! The path from start to goal is shown below:");
+				int minFn =Integer.MAX_VALUE;
+				int pathNum = 0;
 				for(int q = 0; q < recordPath.size(); q++){
 					ArrayList<Integer> finalPath = new ArrayList<Integer>();
-					finalPath = recordPath.get(q);
+					finalPath = recordPath.get(q);				
 					if(finalPath.get(finalPath.size()-1) == endNum){
-						for(int t = 0; t < recordPath.get(q).size(); t++){
-							System.out.print(finalPath.get(t)+" --> ");
+						if(finalPath.get(0) < minFn){
+							minFn = finalPath.get(0);
+							pathNum = q;
 						}
 					}
 				}
+				for(int t = 1; t < recordPath.get(pathNum).size() - 1; t++){
+					System.out.print(recordPath.get(pathNum).get(t) + " --> ");
+				}
+				System.out.println(vertices[recordPath.get(pathNum).get(recordPath.get(pathNum).size() - 1)]);
+				System.out.println("The total path length is " + recordPath.get(pathNum).get(0));
 				break;
 			}
 		}
 	}
-	
-	public boolean copyOrCreate(ArrayList<ArrayList<Integer>> recordPath, int truePre){
-		for(int u = 0; u < recordPath.size(); u++){
-			if(recordPath.get(u).get(recordPath.get(u).size() - 2) == truePre){
-				System.out.println("+++++" + (recordPath.get(u).size() - 2));
-				//newPath.get(u).set(0,newPath.get(u).get(0) - matrix[newPath.get(u)])
-				for(int c = 0; c < recordPath.get(u).size() - 1; c++){
-					newPath.add(recordPath.get(u).get(c));
-					System.out.println("%%%" + recordPath.get(u).get(c));
-				}
+//=====================================	
+	public boolean copyOrCreate(ArrayList<ArrayList<Integer>> recordPath, int truePre, boolean realNew){
+		int result = 0;//copy from which line?
+		for(int i = 0; i < recordPath.size(); i++){
+			int secondLast = recordPath.get(i).size() - 2;
+			if(recordPath.get(i).get(secondLast) == truePre){
+				realNew = false;
+				result = i;
 			}
 		}
+		return realNew;
 	}
+	//copy所有的paths
+	public int copyWhichLine(ArrayList<ArrayList<Integer>> recordPath, int truePre){
+		int result = 0;//copy from which line?
+		for(int i = 0; i < recordPath.size(); i++){
+			int secondLast = recordPath.get(i).size() - 2;
+			if(recordPath.get(i).get(secondLast) == truePre){
+				result = i;
+			}
+		}
+		return result;
+	}
+	public ArrayList<ArrayList<Integer>> copy(ArrayList<ArrayList<Integer>> recordPath, 
+			int copyLine, int currentVertices, int children, int[][] matrix){
+		ArrayList<Integer> ori = new ArrayList<Integer>();
+		int lastOne = recordPath.get(copyLine).size()-1;
+		int pathLength = recordPath.get(copyLine).get(0);
+		//int last = recordPath.get(copyLine).get()
+		int newPathLength = pathLength - matrix[recordPath.get(copyLine).get(lastOne)][recordPath.get(copyLine).get(lastOne-1)]
+				+ matrix[currentVertices][children];
+		ori.add(newPathLength);
+		for(int i = 1; i < recordPath.get(copyLine).size() - 1; i++){
+			ori.add(recordPath.get(copyLine).get(i));
+		}
+		ori.add(children);
+		recordPath.add(ori);
+		
+		return recordPath;
+	}
+	
 }
