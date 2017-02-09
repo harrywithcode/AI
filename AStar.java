@@ -52,23 +52,29 @@ public class AStar {
 		
 		ArrayList<Integer> visitedNode = new ArrayList<Integer>();
 			//list里存的数就是已经访问过的node的编号，index没有任何意义
-		int currentVertices = startNum;
+		
 		Map<Integer, Integer> waitList = new HashMap<Integer, Integer>();
 		
 		Map<Integer, Integer> fn = new HashMap<Integer, Integer>();
 		
 		int[] pathValue = new int[20];
-		
+		int currentVertices = startNum;
 		int pre = startNum;
+		
+		
+		Map<Integer,Integer> recordPre = new HashMap<Integer,Integer>();//key is current node, value is its parent
+		ArrayList<ArrayList<Integer>> recordPath = new ArrayList<ArrayList<Integer>>();
+		//record path记录了所有有可能的路径，以及他们的长度。最后只可能有一个list的结尾是end node
+		//在这个list里面，我先添加这个list从头到尾巴的距离长度，list的开头第一位记录这个长度值
 		//================================================================
 		
-		currentVertices = 1;//最初始数据
-		pre = 1;
+		currentVertices = startNum;//最初始数据
+		pre = startNum;
 		waitList.put(currentVertices, pathValue[currentVertices] + straight_dis[currentVertices]);
 		
 		for(int loop = 0; loop < 30; loop++){
 			System.out.println("The input current vertice is " + currentVertices);
-			System.out.println("The input previous node is " + pre);
+			//System.out.println("The input previous node is " + pre);
 			System.out.println();
 			
 			waitList.remove(currentVertices);
@@ -79,10 +85,9 @@ public class AStar {
 			ArrayList<Integer> hn = new ArrayList<Integer>();
 			
 			
-			//find children of current vertex
 			for(int i = 0; i < 20 ; i++){
 				int gn = matrix[currentVertices][i];
-				int skip = 0;
+				int skip = 0;//跳过访问过的node和连不上的node
 				for(int j = 0;j < visitedNode.size(); j++){
 					if(i == visitedNode.get(j)){
 						skip = 1;
@@ -95,15 +100,57 @@ public class AStar {
 				if(skip == 1){
 					continue;
 				}
+				around.add(i);
+				//=============
+				List<Integer> tails = new ArrayList<Integer>();
 				
-				//System.out.println("++++++++++++++" + matrix[17][18]);
-				//System.out.println("the children is " + i + " with the value " + matrix[currentVertices][i]);
-				if(gn != 0){
-					around.add(i);
-					pathValue[i] = pathValue[pre] + gn;
-					fn.put(i, pathValue[i] + straight_dis[i]);//previous path length + current heo path lenth + h(n)
-					waitList.put(i, fn.get(i));
+				for(int j = 0; j < recordPath.size(); j++){
+					int tail = recordPath.get(j).size();//每一条的最后一位尾巴
+					
+					if(recordPath.get(j).get(tail) == pre){						
+						tails.add(j);//tails存放着所有前辈的所在的二维数组的行数
+					}
 				}
+				int addWhichLine = 0;//这个i点最后到底添加到哪个list里面了，这个list在二维数组里的编号
+				if(tails.size() == 0){//新出的点，没有前辈
+					ArrayList<Integer> newPath = new ArrayList<Integer>();
+					newPath.add(gn);//list的第一位存放list的长度
+					newPath.add(pre);
+					recordPath.add(newPath);
+					addWhichLine = recordPath.size();
+				}
+				else if(tails.size() == 1){//有一个前辈，直接连过去就行了
+					recordPath.get(tails.get(0)).add(currentVertices);
+					recordPath.get(tails.get(0)).set(0,recordPath.get(tails.get(0)).get(0)
+							+ gn);//list长度更新
+					addWhichLine = tails.get(0);
+				}				
+				else{//这种点有两个或以上的前辈，就要判断他到底是从哪个前辈那里来的
+					//但是判断依据是比较这几个前辈的fn还是hn？
+					//个人感觉是hn
+					//15,14,13,5,1,  1从哪里来？
+					int min = Integer.MAX_VALUE;
+					for(int p = 0;p < tails.size();p++){
+						if(recordPath.get(tails.get(p)).get(0)  < min){
+							min = p;
+						}
+					}
+					recordPath.get(tails.get(min)).add(currentVertices);
+					recordPath.get(tails.get(min)).set(0,recordPath.get(tails.get(min)).get(0) 
+							+ gn);
+					addWhichLine = tails.get(min);
+				}
+				
+				//************Problem under this line. How to compute length of path
+				//and how to record path
+				//先把所有的路径都写进二维list里，然后把每个路径对应的长度都算出来。
+				//更新长度的时候，直接在list里面更新，fn添加的时候直接去list里面找路径长度
+				int pathVal = recordPath.get(addWhichLine).get(0);
+				fn.put(i, pathVal + straight_dis[i]);//previous path length + current heo path lenth + h(n)
+				waitList.put(i, fn.get(i));
+				
+			//=================================		
+				
 			}
 			
 			int count = 0;
@@ -129,35 +176,12 @@ public class AStar {
 			pre = currentVertices;
 			currentVertices = chooseNode;
 			
-			if(currentVertices == 19){
+//			
+			
+			if(currentVertices == endNum){
 				System.out.println("Done!");
 				break;
 			}
-			//System.out.println("++++++++++++++++++++++++++++++++" + currentVertices);
-			
-			
-//			System.out.println("currentVertices " + currentVertices);
-//			System.out.println("pre "+pre);
-//			
-//			
-//			for(int k:fn.keySet()){
-//				System.out.println("fn " + k + " --- " + fn.get(k));
-//			}
-//			
-//			for(int k:waitList.keySet()){
-//				System.out.println("wait list " + k + " --- " + waitList.get(k));
-//			}
-//			System.out.println("the " + loop + " loop is finished  =============================================");
-//			System.out.println();
-			//=========================================
-			//judge whether we reach the goal
-			//if(currentVertices == endNum){
-				//travelToGoal = true;
-			//}
-			
-			
-		}	
-		
-		//return path;
+		}
 	}
 }
