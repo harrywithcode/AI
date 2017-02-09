@@ -46,8 +46,8 @@ public class AStar {
 		int[][] matrix = container.getMatrix();
 		String[] vertices = container.getVertices();
 		int[] straight_dis = container.getStraight_dis();
-		int startNum = 1;
-		int endNum = 19;
+		int startNum = 19;
+		int endNum = 1;
 		//=======================================
 		
 		ArrayList<Integer> visitedNode = new ArrayList<Integer>();
@@ -64,13 +64,15 @@ public class AStar {
 		
 		Map<Integer,Integer> recordPre = new HashMap<Integer,Integer>();//key is current node, value is its parent
 		ArrayList<ArrayList<Integer>> recordPath = new ArrayList<ArrayList<Integer>>();
+//		ArrayList<Integer> start = new ArrayList<Integer>();
+//		start.add(0);
+//		start.add(1);
+//		recordPath.add(start);
 		//record path记录了所有有可能的路径，以及他们的长度。最后只可能有一个list的结尾是end node
 		//在这个list里面，我先添加这个list从头到尾巴的距离长度，list的开头第一位记录这个长度值
 		//================================================================
 		
-		currentVertices = startNum;//最初始数据
-		pre = startNum;
-		waitList.put(currentVertices, pathValue[currentVertices] + straight_dis[currentVertices]);
+		waitList.put(currentVertices, 0 + straight_dis[currentVertices]);
 		
 		for(int loop = 0; loop < 30; loop++){
 			System.out.println("The input current vertice is " + currentVertices);
@@ -80,9 +82,6 @@ public class AStar {
 			waitList.remove(currentVertices);
 			visitedNode.add(currentVertices);
 			
-			//System.out.println("ddddddddddddd");
-			ArrayList<Integer> around = new ArrayList<Integer>();
-			ArrayList<Integer> hn = new ArrayList<Integer>();
 			
 			
 			for(int i = 0; i < 20 ; i++){
@@ -100,30 +99,60 @@ public class AStar {
 				if(skip == 1){
 					continue;
 				}
-				around.add(i);
+				
+				
+				int truePre = currentVertices;//真实地图里的前辈和儿子，地理位置关系，不是遍历顺序关系
+				int children = i;
+				
 				//=============
 				List<Integer> tails = new ArrayList<Integer>();
 				
 				for(int j = 0; j < recordPath.size(); j++){
-					int tail = recordPath.get(j).size();//每一条的最后一位尾巴
+					int tail = recordPath.get(j).size() - 1;//每一条的最后一位尾巴
 					
-					if(recordPath.get(j).get(tail) == pre){						
+					if(recordPath.get(j).get(tail) == truePre){	//这里记录的pre是实际地图上的pre，不是逻辑顺序上的pre					
 						tails.add(j);//tails存放着所有前辈的所在的二维数组的行数
 					}
 				}
 				int addWhichLine = 0;//这个i点最后到底添加到哪个list里面了，这个list在二维数组里的编号
 				if(tails.size() == 0){//新出的点，没有前辈
 					ArrayList<Integer> newPath = new ArrayList<Integer>();
-					newPath.add(gn);//list的第一位存放list的长度
-					newPath.add(pre);
-					recordPath.add(newPath);
-					addWhichLine = recordPath.size();
+					boolean realNew = true;
+					//========= final problem
+					realNew = copyOrCreate(recordPath, truePre);
+					
+					if(realNew == false){//有前辈在里面
+						ArrayList copyLine = new ArrayList<Integer>();
+						copyLine = copyWhichLine(recordPath,truePre);
+						recordPath = copy(recordPath, copyLine, currentVertices, children, matrix);
+						addWhichLine  = recordPath.size() - 1;
+					}
+					//=========
+					if(realNew == true){//前辈在这个二维list里面一次没有出现过
+						newPath.add(gn);//list的第一位存放list的长度
+						newPath.add(truePre);
+						newPath.add(children);
+						recordPath.add(newPath);
+						addWhichLine = recordPath.size() - 1;
+					}					
 				}
-				else if(tails.size() == 1){//有一个前辈，直接连过去就行了
-					recordPath.get(tails.get(0)).add(currentVertices);
-					recordPath.get(tails.get(0)).set(0,recordPath.get(tails.get(0)).get(0)
-							+ gn);//list长度更新
+				else if(tails.size() == 1){//有一个前辈，直接连过去就行了，同时还要查看是否需要copy
+					//比如已经有19-0-15-5和19-12-15，再添加14的时候不仅要在15后面添加，也要copy前面那个list
+					ArrayList<Integer> duplicate = new ArrayList<Integer>();
+					for(int t = 0; t < recordPath.get(tails.get(0)).size(); t++){
+						duplicate.add(recordPath.get(tails.get(0)).get(t));
+					}
+					
+					recordPath.get(tails.get(0)).add(children);
+					recordPath.get(tails.get(0)).set(0,recordPath.get(tails.get(0)).get(0) + gn);//list长度更新
+					recordPath.add(duplicate);
+					//tails.add(recordPath.size()-1);
 					addWhichLine = tails.get(0);
+					
+//					for(int p = 0;p < tails.size();p++){
+//						System.out.println("tails updated " + tails.get(p));
+//					}
+					
 				}				
 				else{//这种点有两个或以上的前辈，就要判断他到底是从哪个前辈那里来的
 					//但是判断依据是比较这几个前辈的fn还是hn？
@@ -131,15 +160,42 @@ public class AStar {
 					//15,14,13,5,1,  1从哪里来？
 					int min = Integer.MAX_VALUE;
 					for(int p = 0;p < tails.size();p++){
+						System.out.println("tails " + tails.get(p));
+					}
+					for(int p = 0;p < tails.size();p++){
 						if(recordPath.get(tails.get(p)).get(0)  < min){
-							min = p;
+							min = tails.get(p);
+							System.out.println("recordPath.get(tails.get(p)).get(0) "+recordPath.get(tails.get(p)).get(0));
+							System.out.println("mmmm " + min);
 						}
 					}
-					recordPath.get(tails.get(min)).add(currentVertices);
+					System.out.println("Min is " + min);
+					ArrayList<Integer> duplicate = new ArrayList<Integer>();
+					for(int t = 0; t < recordPath.get(tails.get(min)).size(); t++){
+						duplicate.add(recordPath.get(tails.get(min)).get(t));
+					}
+					recordPath.get(tails.get(min)).add(children);
 					recordPath.get(tails.get(min)).set(0,recordPath.get(tails.get(min)).get(0) 
 							+ gn);
+					recordPath.add(duplicate);
+					//tails.add(recordPath.size()-1);
 					addWhichLine = tails.get(min);
+					
+//					for(int p = 0;p < tails.size();p++){
+//						System.out.println("tails updated " + tails.get(p));
+//					}
+					
 				}
+				
+				//*******Debug**********
+				for(int d = 0; d < recordPath.size(); d++){
+					for(int e = 0; e < recordPath.get(d).size(); e++){
+						System.out.print(recordPath.get(d).get(e) + " - ");
+					}
+					System.out.println();
+				}
+				System.out.println("====");
+				//*****************
 				
 				//************Problem under this line. How to compute length of path
 				//and how to record path
@@ -179,9 +235,70 @@ public class AStar {
 //			
 			
 			if(currentVertices == endNum){
-				System.out.println("Done!");
+				System.out.println("We reach the goal!! The path from start to goal is shown below:");
+				int minFn =Integer.MAX_VALUE;
+				int pathNum = 0;
+				for(int q = 0; q < recordPath.size(); q++){
+					ArrayList<Integer> finalPath = new ArrayList<Integer>();
+					finalPath = recordPath.get(q);				
+					if(finalPath.get(finalPath.size()-1) == endNum){
+						if(finalPath.get(0) < minFn){
+							minFn = finalPath.get(0);
+							pathNum = q;
+						}
+					}
+				}
+				for(int t = 1; t < recordPath.get(pathNum).size() - 1; t++){
+					System.out.print(vertices[recordPath.get(pathNum).get(t)] + " --> ");
+				}
+				System.out.println(vertices[recordPath.get(pathNum).get(recordPath.get(pathNum).size() - 1)]);
+				System.out.println("The total path length is " + recordPath.get(pathNum).get(0));
 				break;
 			}
 		}
 	}
+//=====================================	
+	public boolean copyOrCreate(ArrayList<ArrayList<Integer>> recordPath, int truePre){
+		boolean realNew = true;
+		for(int i = 0; i < recordPath.size(); i++){
+			int secondLast = recordPath.get(i).size() - 2;
+			if(recordPath.get(i).get(secondLast) == truePre){
+				realNew = false;
+			}
+		}
+		return realNew;
+	}
+	//copy所有的paths
+	public ArrayList copyWhichLine(ArrayList<ArrayList<Integer>> recordPath, int truePre){
+		ArrayList result = new ArrayList<Integer>();//copy from which line? or which lines?
+		for(int i = 0; i < recordPath.size(); i++){
+			int secondLast = recordPath.get(i).size() - 2;
+			if(recordPath.get(i).get(secondLast) == truePre){
+				result.add(i);
+			}
+		}
+		return result;
+	}
+	public ArrayList<ArrayList<Integer>> copy(ArrayList<ArrayList<Integer>> recordPath, 
+			ArrayList<Integer> copyLines, int currentVertices, int children, int[][] matrix){
+		for(int k = 0; k < copyLines.size(); k++){
+			int copyLine = copyLines.get(k);
+			ArrayList<Integer> ori = new ArrayList<Integer>();
+			int lastOne = recordPath.get(copyLine).size()-1;
+			int pathLength = recordPath.get(copyLine).get(0);
+			//int last = recordPath.get(copyLine).get()
+			int newPathLength = pathLength - matrix[recordPath.get(copyLine).get(lastOne)][recordPath.get(copyLine).get(lastOne-1)]
+					+ matrix[currentVertices][children];
+			ori.add(newPathLength);
+			for(int i = 1; i < recordPath.get(copyLine).size() - 1; i++){
+				ori.add(recordPath.get(copyLine).get(i));
+			}
+			ori.add(children);
+			recordPath.add(ori);
+
+		}
+				
+		return recordPath;
+	}
+	
 }
