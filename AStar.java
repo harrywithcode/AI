@@ -64,6 +64,10 @@ public class AStar {
 		
 		Map<Integer,Integer> recordPre = new HashMap<Integer,Integer>();//key is current node, value is its parent
 		ArrayList<ArrayList<Integer>> recordPath = new ArrayList<ArrayList<Integer>>();
+//		ArrayList<Integer> start = new ArrayList<Integer>();
+//		start.add(0);
+//		start.add(1);
+//		recordPath.add(start);
 		//record path记录了所有有可能的路径，以及他们的长度。最后只可能有一个list的结尾是end node
 		//在这个list里面，我先添加这个list从头到尾巴的距离长度，list的开头第一位记录这个长度值
 		//================================================================
@@ -113,11 +117,30 @@ public class AStar {
 				int addWhichLine = 0;//这个i点最后到底添加到哪个list里面了，这个list在二维数组里的编号
 				if(tails.size() == 0){//新出的点，没有前辈
 					ArrayList<Integer> newPath = new ArrayList<Integer>();
-					newPath.add(gn);//list的第一位存放list的长度
-					newPath.add(truePre);
-					newPath.add(children);
-					recordPath.add(newPath);
-					addWhichLine = recordPath.size() - 1;
+					boolean realNew = true;
+					//========= final problem
+					for(int u = 0; u < recordPath.size(); u++){
+						if(recordPath.get(u).get(recordPath.get(u).size() - 2) == truePre){
+							System.out.println("+++++" + (recordPath.get(u).size() - 2));
+							//newPath.get(u).set(0,newPath.get(u).get(0) - matrix[newPath.get(u)])
+							for(int c = 0; c < recordPath.get(u).size() - 1; c++){
+								newPath.add(recordPath.get(u).get(c));
+								System.out.println("%%%" + recordPath.get(u).get(c));
+							}
+							newPath.add(children);
+							recordPath.add(newPath);
+							addWhichLine = recordPath.size() - 1;
+							realNew = false;//曾经有前辈出现过，不是真正的新点
+						}
+					}
+					//=========
+					if(realNew == true){
+						newPath.add(gn);//list的第一位存放list的长度
+						newPath.add(truePre);
+						newPath.add(children);
+						recordPath.add(newPath);
+						addWhichLine = recordPath.size() - 1;
+					}					
 				}
 				else if(tails.size() == 1){//有一个前辈，直接连过去就行了
 					recordPath.get(tails.get(0)).add(children);
@@ -140,6 +163,16 @@ public class AStar {
 							+ gn);
 					addWhichLine = tails.get(min);
 				}
+				
+				//*******Debug**********
+				for(int d = 0; d < recordPath.size(); d++){
+					for(int e = 0; e < recordPath.get(d).size(); e++){
+						System.out.print(recordPath.get(d).get(e) + " - ");
+					}
+					System.out.println();
+				}
+				System.out.println("====");
+				//*****************
 				
 				//************Problem under this line. How to compute length of path
 				//and how to record path
@@ -190,6 +223,19 @@ public class AStar {
 					}
 				}
 				break;
+			}
+		}
+	}
+	
+	public boolean copyOrCreate(ArrayList<ArrayList<Integer>> recordPath, int truePre){
+		for(int u = 0; u < recordPath.size(); u++){
+			if(recordPath.get(u).get(recordPath.get(u).size() - 2) == truePre){
+				System.out.println("+++++" + (recordPath.get(u).size() - 2));
+				//newPath.get(u).set(0,newPath.get(u).get(0) - matrix[newPath.get(u)])
+				for(int c = 0; c < recordPath.get(u).size() - 1; c++){
+					newPath.add(recordPath.get(u).get(c));
+					System.out.println("%%%" + recordPath.get(u).get(c));
+				}
 			}
 		}
 	}
