@@ -5,13 +5,16 @@ import java.util.Map;
 
 
 public class AStar {
-	public void astar(Container container){
-		/*å¦‚æœè¿™ä¸ªç‚¹è¢«é€‰ä½œcurrentç‚¹ï¼Œä»–å°±è¦è¢«ç§»é™¤fnï¼Œä»¥åå†ä¹Ÿä¸è®¿é—®å®ƒ
-		 * å¯ä»¥åˆ©ç”¨waitlistå®ç°ï¼Œç›®å‰ç¨‹åºé‡Œé¢æ²¡ç”¨åˆ°waitlist
-		 * æ¢å¥è¯è¯´ï¼Œåªè¦è¿™ä¸ªnodeæˆä¸ºäº†current nodeï¼Œåœ¨ä»–æˆä¸ºçš„ä¸€ç¬é—´ï¼Œä»–å°±è¢«ç§»é™¤waitlistäº†
-		 * æ‰€ä»¥ï¼Œä¸ç”¨åˆ¤æ–­è¿™ä¸ªnodeè¢«è®¿é—®äº†å‡ æ¬¡ï¼Œæˆ‘çš„visitæ•°ç»„ç”¨çš„ä¸å¯¹ï¼Œä¸åº”è¯¥å­˜æ”¾visitæ¬¡æ•°
+	public void astar(Container container, String args){
+		String stringW = args;
+		double w = Double.parseDouble(stringW);
+		System.out.println("wwwwwwwwww" + w);
+		/*Èç¹ûÕâ¸öµã±»Ñ¡×÷currentµã£¬Ëû¾ÍÒª±»ÒÆ³ıfn£¬ÒÔºóÔÙÒ²²»·ÃÎÊËü
+		 * ¿ÉÒÔÀûÓÃwaitlistÊµÏÖ£¬Ä¿Ç°³ÌĞòÀïÃæÃ»ÓÃµ½waitlist
+		 * »»¾ä»°Ëµ£¬Ö»ÒªÕâ¸önode³ÉÎªÁËcurrent node£¬ÔÚËû³ÉÎªµÄÒ»Ë²¼ä£¬Ëû¾Í±»ÒÆ³ıwaitlistÁË
+		 * ËùÒÔ£¬²»ÓÃÅĞ¶ÏÕâ¸önode±»·ÃÎÊÁË¼¸´Î£¬ÎÒµÄvisitÊı×éÓÃµÄ²»¶Ô£¬²»Ó¦¸Ã´æ·Åvisit´ÎÊı
 		 * 
-		 * é€‰childrenæ˜¯æŒ‰ç…§fné€‰ï¼Œè¿˜æ˜¯æŒ‰ç…§gné€‰ï¼Ÿ
+		 * Ñ¡childrenÊÇ°´ÕÕfnÑ¡£¬»¹ÊÇ°´ÕÕgnÑ¡£¿
 		 * Pseudo code:
 
 		OPEN //the set of nodes to be evaluated
@@ -51,13 +54,13 @@ public class AStar {
 		//=======================================
 		
 		ArrayList<Integer> visitedNode = new ArrayList<Integer>();
-			//listé‡Œå­˜çš„æ•°å°±æ˜¯å·²ç»è®¿é—®è¿‡çš„nodeçš„ç¼–å·ï¼Œindexæ²¡æœ‰ä»»ä½•æ„ä¹‰
+			//listÀï´æµÄÊı¾ÍÊÇÒÑ¾­·ÃÎÊ¹ıµÄnodeµÄ±àºÅ£¬indexÃ»ÓĞÈÎºÎÒâÒå
 		
-		Map<Integer, Integer> waitList = new HashMap<Integer, Integer>();
+		Map<Integer, Double> waitList = new HashMap<Integer, Double>();
 		
-		Map<Integer, Integer> fn = new HashMap<Integer, Integer>();
+		Map<Integer, Double> fn = new HashMap<Integer, Double>();
 		
-		int[] pathValue = new int[20];
+		ArrayList<Integer> expand = new ArrayList<Integer>();
 		int currentVertices = startNum;
 		int pre = startNum;
 		
@@ -68,17 +71,17 @@ public class AStar {
 //		start.add(0);
 //		start.add(1);
 //		recordPath.add(start);
-		//record pathè®°å½•äº†æ‰€æœ‰æœ‰å¯èƒ½çš„è·¯å¾„ï¼Œä»¥åŠä»–ä»¬çš„é•¿åº¦ã€‚æœ€ååªå¯èƒ½æœ‰ä¸€ä¸ªlistçš„ç»“å°¾æ˜¯end node
-		//åœ¨è¿™ä¸ªlisté‡Œé¢ï¼Œæˆ‘å…ˆæ·»åŠ è¿™ä¸ªlistä»å¤´åˆ°å°¾å·´çš„è·ç¦»é•¿åº¦ï¼Œlistçš„å¼€å¤´ç¬¬ä¸€ä½è®°å½•è¿™ä¸ªé•¿åº¦å€¼.
+		//record path¼ÇÂ¼ÁËËùÓĞÓĞ¿ÉÄÜµÄÂ·¾¶£¬ÒÔ¼°ËûÃÇµÄ³¤¶È¡£×îºóÖ»¿ÉÄÜÓĞÒ»¸ölistµÄ½áÎ²ÊÇend node
+		//ÔÚÕâ¸ölistÀïÃæ£¬ÎÒÏÈÌí¼ÓÕâ¸ölist´ÓÍ·µ½Î²°ÍµÄ¾àÀë³¤¶È£¬listµÄ¿ªÍ·µÚÒ»Î»¼ÇÂ¼Õâ¸ö³¤¶ÈÖµ
 		//================================================================
 		
-		waitList.put(currentVertices, 0 + straight_dis[currentVertices]);
+		waitList.put(currentVertices, (double)(0 + straight_dis[currentVertices]));
 		
-		for(int loop = 0; loop < 30; loop++){
+		while(currentVertices != endNum){
 			System.out.println("The input current vertice is " + currentVertices);
 			//System.out.println("The input previous node is " + pre);
 			System.out.println();
-			
+			expand.add(currentVertices);
 			waitList.remove(currentVertices);
 			visitedNode.add(currentVertices);
 			
@@ -86,7 +89,7 @@ public class AStar {
 			
 			for(int i = 0; i < 20 ; i++){
 				int gn = matrix[currentVertices][i];
-				int skip = 0;//è·³è¿‡è®¿é—®è¿‡çš„nodeå’Œè¿ä¸ä¸Šçš„node
+				int skip = 0;//Ìø¹ı·ÃÎÊ¹ıµÄnodeºÍÁ¬²»ÉÏµÄnode
 				for(int j = 0;j < visitedNode.size(); j++){
 					if(i == visitedNode.get(j)){
 						skip = 1;
@@ -101,50 +104,50 @@ public class AStar {
 				}
 				
 				
-				int truePre = currentVertices;//çœŸå®åœ°å›¾é‡Œçš„å‰è¾ˆå’Œå„¿å­ï¼Œåœ°ç†ä½ç½®å…³ç³»ï¼Œä¸æ˜¯éå†é¡ºåºå…³ç³»
+				int truePre = currentVertices;//ÕæÊµµØÍ¼ÀïµÄÇ°±²ºÍ¶ù×Ó£¬µØÀíÎ»ÖÃ¹ØÏµ£¬²»ÊÇ±éÀúË³Ğò¹ØÏµ
 				int children = i;
 				
 				//=============
 				List<Integer> tails = new ArrayList<Integer>();
 				
 				for(int j = 0; j < recordPath.size(); j++){
-					int tail = recordPath.get(j).size() - 1;//æ¯ä¸€æ¡çš„æœ€åä¸€ä½å°¾å·´
+					int tail = recordPath.get(j).size() - 1;//Ã¿Ò»ÌõµÄ×îºóÒ»Î»Î²°Í
 					
-					if(recordPath.get(j).get(tail) == truePre){	//è¿™é‡Œè®°å½•çš„preæ˜¯å®é™…åœ°å›¾ä¸Šçš„preï¼Œä¸æ˜¯é€»è¾‘é¡ºåºä¸Šçš„pre					
-						tails.add(j);//tailså­˜æ”¾ç€æ‰€æœ‰å‰è¾ˆçš„æ‰€åœ¨çš„äºŒç»´æ•°ç»„çš„è¡Œæ•°
+					if(recordPath.get(j).get(tail) == truePre){	//ÕâÀï¼ÇÂ¼µÄpreÊÇÊµ¼ÊµØÍ¼ÉÏµÄpre£¬²»ÊÇÂß¼­Ë³ĞòÉÏµÄpre					
+						tails.add(j);//tails´æ·Å×ÅËùÓĞÇ°±²µÄËùÔÚµÄ¶şÎ¬Êı×éµÄĞĞÊı
 					}
 				}
-				int addWhichLine = 0;//è¿™ä¸ªiç‚¹æœ€ååˆ°åº•æ·»åŠ åˆ°å“ªä¸ªlisté‡Œé¢äº†ï¼Œè¿™ä¸ªliståœ¨äºŒç»´æ•°ç»„é‡Œçš„ç¼–å·
-				if(tails.size() == 0){//æ–°å‡ºçš„ç‚¹ï¼Œæ²¡æœ‰å‰è¾ˆ
+				int addWhichLine = 0;//Õâ¸öiµã×îºóµ½µ×Ìí¼Óµ½ÄÄ¸ölistÀïÃæÁË£¬Õâ¸ölistÔÚ¶şÎ¬Êı×éÀïµÄ±àºÅ
+				if(tails.size() == 0){//ĞÂ³öµÄµã£¬Ã»ÓĞÇ°±²
 					ArrayList<Integer> newPath = new ArrayList<Integer>();
 					boolean realNew = true;
 					//========= final problem
 					realNew = copyOrCreate(recordPath, truePre);
 					
-					if(realNew == false){//æœ‰å‰è¾ˆåœ¨é‡Œé¢
+					if(realNew == false){//ÓĞÇ°±²ÔÚÀïÃæ
 						ArrayList copyLine = new ArrayList<Integer>();
 						copyLine = copyWhichLine(recordPath,truePre);
 						recordPath = copy(recordPath, copyLine, currentVertices, children, matrix);
 						addWhichLine  = recordPath.size() - 1;
 					}
 					//=========
-					if(realNew == true){//å‰è¾ˆåœ¨è¿™ä¸ªäºŒç»´listé‡Œé¢ä¸€æ¬¡æ²¡æœ‰å‡ºç°è¿‡
-						newPath.add(gn);//listçš„ç¬¬ä¸€ä½å­˜æ”¾listçš„é•¿åº¦
+					if(realNew == true){//Ç°±²ÔÚÕâ¸ö¶şÎ¬listÀïÃæÒ»´ÎÃ»ÓĞ³öÏÖ¹ı
+						newPath.add(gn);//listµÄµÚÒ»Î»´æ·ÅlistµÄ³¤¶È
 						newPath.add(truePre);
 						newPath.add(children);
 						recordPath.add(newPath);
 						addWhichLine = recordPath.size() - 1;
 					}					
 				}
-				else if(tails.size() == 1){//æœ‰ä¸€ä¸ªå‰è¾ˆï¼Œç›´æ¥è¿è¿‡å»å°±è¡Œäº†ï¼ŒåŒæ—¶è¿˜è¦æŸ¥çœ‹æ˜¯å¦éœ€è¦copy
-					//æ¯”å¦‚å·²ç»æœ‰19-0-15-5å’Œ19-12-15ï¼Œå†æ·»åŠ 14çš„æ—¶å€™ä¸ä»…è¦åœ¨15åé¢æ·»åŠ ï¼Œä¹Ÿè¦copyå‰é¢é‚£ä¸ªlist
+				else if(tails.size() == 1){//ÓĞÒ»¸öÇ°±²£¬Ö±½ÓÁ¬¹ıÈ¥¾ÍĞĞÁË£¬Í¬Ê±»¹Òª²é¿´ÊÇ·ñĞèÒªcopy
+					//±ÈÈçÒÑ¾­ÓĞ19-0-15-5ºÍ19-12-15£¬ÔÙÌí¼Ó14µÄÊ±ºò²»½öÒªÔÚ15ºóÃæÌí¼Ó£¬Ò²ÒªcopyÇ°ÃæÄÇ¸ölist
 					ArrayList<Integer> duplicate = new ArrayList<Integer>();
 					for(int t = 0; t < recordPath.get(tails.get(0)).size(); t++){
 						duplicate.add(recordPath.get(tails.get(0)).get(t));
 					}
 					
 					recordPath.get(tails.get(0)).add(children);
-					recordPath.get(tails.get(0)).set(0,recordPath.get(tails.get(0)).get(0) + gn);//listé•¿åº¦æ›´æ–°
+					recordPath.get(tails.get(0)).set(0,recordPath.get(tails.get(0)).get(0) + gn);//list³¤¶È¸üĞÂ
 					recordPath.add(duplicate);
 					//tails.add(recordPath.size()-1);
 					addWhichLine = tails.get(0);
@@ -154,10 +157,10 @@ public class AStar {
 //					}
 					
 				}				
-				else{//è¿™ç§ç‚¹æœ‰ä¸¤ä¸ªæˆ–ä»¥ä¸Šçš„å‰è¾ˆï¼Œå°±è¦åˆ¤æ–­ä»–åˆ°åº•æ˜¯ä»å“ªä¸ªå‰è¾ˆé‚£é‡Œæ¥çš„
-					//ä½†æ˜¯åˆ¤æ–­ä¾æ®æ˜¯æ¯”è¾ƒè¿™å‡ ä¸ªå‰è¾ˆçš„fnè¿˜æ˜¯hnï¼Ÿ
-					//ä¸ªäººæ„Ÿè§‰æ˜¯hn
-					//15,14,13,5,1,  1ä»å“ªé‡Œæ¥ï¼Ÿ
+				else{//ÕâÖÖµãÓĞÁ½¸ö»òÒÔÉÏµÄÇ°±²£¬¾ÍÒªÅĞ¶ÏËûµ½µ×ÊÇ´ÓÄÄ¸öÇ°±²ÄÇÀïÀ´µÄ
+					//µ«ÊÇÅĞ¶ÏÒÀ¾İÊÇ±È½ÏÕâ¼¸¸öÇ°±²µÄfn»¹ÊÇhn£¿
+					//¸öÈË¸Ğ¾õÊÇhn
+					//15,14,13,5,1,  1´ÓÄÄÀïÀ´£¿
 					int min = Integer.MAX_VALUE;
 					for(int p = 0;p < tails.size();p++){
 						System.out.println("tails " + tails.get(p));
@@ -199,10 +202,16 @@ public class AStar {
 				
 				//************Problem under this line. How to compute length of path
 				//and how to record path
-				//å…ˆæŠŠæ‰€æœ‰çš„è·¯å¾„éƒ½å†™è¿›äºŒç»´listé‡Œï¼Œç„¶åæŠŠæ¯ä¸ªè·¯å¾„å¯¹åº”çš„é•¿åº¦éƒ½ç®—å‡ºæ¥ã€‚
-				//æ›´æ–°é•¿åº¦çš„æ—¶å€™ï¼Œç›´æ¥åœ¨listé‡Œé¢æ›´æ–°ï¼Œfnæ·»åŠ çš„æ—¶å€™ç›´æ¥å»listé‡Œé¢æ‰¾è·¯å¾„é•¿åº¦
+				//ÏÈ°ÑËùÓĞµÄÂ·¾¶¶¼Ğ´½ø¶şÎ¬listÀï£¬È»ºó°ÑÃ¿¸öÂ·¾¶¶ÔÓ¦µÄ³¤¶È¶¼Ëã³öÀ´¡£
+				//¸üĞÂ³¤¶ÈµÄÊ±ºò£¬Ö±½ÓÔÚlistÀïÃæ¸üĞÂ£¬fnÌí¼ÓµÄÊ±ºòÖ±½ÓÈ¥listÀïÃæÕÒÂ·¾¶³¤¶È
 				int pathVal = recordPath.get(addWhichLine).get(0);
-				fn.put(i, pathVal + straight_dis[i]);//previous path length + current heo path lenth + h(n)
+				if(w == 0.25 || w == 0.75){
+					fn.put(i, (1-w)*pathVal + w*straight_dis[i]);
+				}
+				else{
+					fn.put(i, (double)(pathVal + straight_dis[i]));//previous path length + current heo path lenth + h(n)
+				}
+				
 				waitList.put(i, fn.get(i));
 				
 			//=================================		
@@ -221,7 +230,7 @@ public class AStar {
 				
 			
 			
-			int minimumFn = Integer.MAX_VALUE;
+			double minimumFn = Integer.MAX_VALUE;
 			int chooseNode = startNum;
 			for(int j :waitList.keySet()){
 				if(waitList.get(j) < minimumFn){						
@@ -236,6 +245,7 @@ public class AStar {
 			
 			if(currentVertices == endNum){
 				System.out.println("We reach the goal!! The path from start to goal is shown below:");
+				expand.add(currentVertices);
 				int minFn =Integer.MAX_VALUE;
 				int pathNum = 0;
 				for(int q = 0; q < recordPath.size(); q++){
@@ -253,6 +263,10 @@ public class AStar {
 				}
 				System.out.println(vertices[recordPath.get(pathNum).get(recordPath.get(pathNum).size() - 1)]);
 				System.out.println("The total path length is " + recordPath.get(pathNum).get(0));
+				System.out.println("The nodes that have been expanded is shown below: ");
+				for(int t = 0; t < expand.size(); t++){
+					System.out.print(vertices[expand.get(t)] + "  ");
+				}
 				break;
 			}
 		}
@@ -268,7 +282,7 @@ public class AStar {
 		}
 		return realNew;
 	}
-	//copyæ‰€æœ‰çš„paths
+	//copyËùÓĞµÄpaths
 	public ArrayList copyWhichLine(ArrayList<ArrayList<Integer>> recordPath, int truePre){
 		ArrayList result = new ArrayList<Integer>();//copy from which line? or which lines?
 		for(int i = 0; i < recordPath.size(); i++){
