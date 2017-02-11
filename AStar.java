@@ -8,7 +8,7 @@ public class AStar {
 	public void astar(Container container, String args){
 		String stringW = args;
 		double w = Double.parseDouble(stringW);
-		System.out.println("wwwwwwwwww" + w);
+		
 		/*如果这个点被选作current点，他就要被移除fn，以后再也不访问它
 		 * 可以利用waitlist实现，目前程序里面没用到waitlist
 		 * 换句话说，只要这个node成为了current node，在他成为的一瞬间，他就被移除waitlist了
@@ -44,7 +44,7 @@ public class AStar {
 		 * 
 		 * 
 		 */
-		System.out.println("============================");
+		//System.out.println("============================");//--
 		
 		int[][] matrix = container.getMatrix();
 		String[] vertices = container.getVertices();
@@ -78,9 +78,9 @@ public class AStar {
 		waitList.put(currentVertices, (double)(0 + straight_dis[currentVertices]));
 		
 		while(currentVertices != endNum){
-			System.out.println("The input current vertice is " + currentVertices);
+			//System.out.println("The input current vertice is " + currentVertices);//--
 			//System.out.println("The input previous node is " + pre);
-			System.out.println();
+			//System.out.println();//--
 			expand.add(currentVertices);
 			waitList.remove(currentVertices);
 			visitedNode.add(currentVertices);
@@ -162,17 +162,17 @@ public class AStar {
 					//个人感觉是hn
 					//15,14,13,5,1,  1从哪里来？
 					int min = Integer.MAX_VALUE;
-					for(int p = 0;p < tails.size();p++){
-						System.out.println("tails " + tails.get(p));
-					}
+//					for(int p = 0;p < tails.size();p++){//--
+//						System.out.println("tails " + tails.get(p));
+//					}
 					for(int p = 0;p < tails.size();p++){
 						if(recordPath.get(tails.get(p)).get(0)  < min){
 							min = tails.get(p);
-							System.out.println("recordPath.get(tails.get(p)).get(0) "+recordPath.get(tails.get(p)).get(0));
-							System.out.println("mmmm " + min);
+//							System.out.println("recordPath.get(tails.get(p)).get(0) "+recordPath.get(tails.get(p)).get(0));
+//							System.out.println("mmmm " + min);//--
 						}
 					}
-					System.out.println("Min is " + min);
+					//System.out.println("Min is " + min);//--
 					ArrayList<Integer> duplicate = new ArrayList<Integer>();
 					for(int t = 0; t < recordPath.get(tails.get(min)).size(); t++){
 						duplicate.add(recordPath.get(tails.get(min)).get(t));
@@ -191,13 +191,13 @@ public class AStar {
 				}
 				
 				//*******Debug**********
-				for(int d = 0; d < recordPath.size(); d++){
-					for(int e = 0; e < recordPath.get(d).size(); e++){
-						System.out.print(recordPath.get(d).get(e) + " - ");
-					}
-					System.out.println();
-				}
-				System.out.println("====");
+//				for(int d = 0; d < recordPath.size(); d++){
+//					for(int e = 0; e < recordPath.get(d).size(); e++){
+//						System.out.print(recordPath.get(d).get(e) + " - ");
+//					}
+//					System.out.println();
+//				}
+//				System.out.println("====");//--
 				//*****************
 				
 				//************Problem under this line. How to compute length of path
@@ -244,7 +244,12 @@ public class AStar {
 //			
 			
 			if(currentVertices == endNum){
-				System.out.println("We reach the goal!! The path from start to goal is shown below:");
+				if(w == 0.25 || w == 0.75){
+					System.out.println("Part 2. W is " + w);
+				}
+				else{
+					System.out.println("Part 1");
+				}
 				expand.add(currentVertices);
 				int minFn =Integer.MAX_VALUE;
 				int pathNum = 0;
@@ -264,9 +269,11 @@ public class AStar {
 				System.out.println(vertices[recordPath.get(pathNum).get(recordPath.get(pathNum).size() - 1)]);
 				System.out.println("The total path length is " + recordPath.get(pathNum).get(0));
 				System.out.println("The nodes that have been expanded is shown below: ");
-				for(int t = 0; t < expand.size(); t++){
-					System.out.print(vertices[expand.get(t)] + "  ");
+				for(int t = 0; t < expand.size() - 1; t++){
+					System.out.print(vertices[expand.get(t)] + ",  ");
 				}
+				System.out.print(vertices[expand.get(expand.size()-1)]);
+				System.out.println();
 				break;
 			}
 		}
